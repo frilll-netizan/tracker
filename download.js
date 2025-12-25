@@ -17,24 +17,29 @@ export default async function handler(req, res) {
         headers: {
           "User-Agent":
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120 Safari/537.36",
-          "Accept": "application/json",
+          "Accept": "*/*",
         },
       }
     );
 
-    if (!response.ok) {
+    const text = await response.text();
+
+    // 🔑 PAKSA PARSE JSON AMAN
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch (e) {
       return res.status(500).json({
-        error: "API FAA tidak merespon",
+        error: "Response bukan JSON",
+        raw: text.substring(0, 200),
       });
     }
 
-    const data = await response.json();
-
     res.setHeader("Access-Control-Allow-Origin", "*");
-    res.status(200).json(data);
+    return res.status(200).json(data);
 
   } catch (err) {
-    res.status(500).json({
+    return res.status(500).json({
       error: "Fetch gagal",
       detail: err.message,
     });
