@@ -8,33 +8,33 @@
 <style>
 * {
     box-sizing: border-box;
-    font-family: 'Segoe UI', sans-serif;
+    font-family: Arial, Helvetica, sans-serif;
 }
 
 body {
     margin: 0;
-    background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
     min-height: 100vh;
+    background: linear-gradient(135deg,#0f2027,#203a43,#2c5364);
     display: flex;
     justify-content: center;
     align-items: center;
-    color: #fff;
 }
 
-.container {
-    width: 100%;
+.card {
+    width: 90%;
     max-width: 420px;
     background: rgba(255,255,255,0.08);
-    backdrop-filter: blur(15px);
+    backdrop-filter: blur(14px);
     border-radius: 16px;
     padding: 24px;
-    box-shadow: 0 10px 30px rgba(0,0,0,.3);
+    box-shadow: 0 10px 30px rgba(0,0,0,.35);
+    color: #fff;
+    text-align: center;
 }
 
-h1 {
-    text-align: center;
-    font-size: 22px;
-    margin-bottom: 20px;
+h2 {
+    margin-top: 0;
+    margin-bottom: 18px;
 }
 
 input {
@@ -44,85 +44,81 @@ input {
     border: none;
     outline: none;
     font-size: 15px;
-    margin-bottom: 12px;
 }
 
 button {
     width: 100%;
+    margin-top: 12px;
     padding: 14px;
     border-radius: 10px;
     border: none;
-    cursor: pointer;
-    font-size: 16px;
-    font-weight: 600;
-    background: linear-gradient(135deg, #00c6ff, #0072ff);
+    background: linear-gradient(135deg,#00c6ff,#0072ff);
     color: #fff;
-    transition: 0.3s;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
 }
 
 button:hover {
-    opacity: 0.85;
-}
-
-.result {
-    margin-top: 20px;
-}
-
-.card {
-    background: rgba(0,0,0,0.4);
-    border-radius: 12px;
-    padding: 12px;
-    margin-bottom: 10px;
-}
-
-.card a {
-    display: block;
-    margin-top: 8px;
-    text-decoration: none;
-    background: #00e676;
-    color: #000;
-    padding: 10px;
-    border-radius: 8px;
-    text-align: center;
-    font-weight: bold;
+    opacity: .85;
 }
 
 .loading {
+    margin-top: 12px;
+    opacity: .8;
+}
+
+.result {
+    margin-top: 18px;
+    text-align: left;
+}
+
+.item {
+    background: rgba(0,0,0,.4);
+    padding: 12px;
+    border-radius: 12px;
+    margin-bottom: 10px;
+}
+
+.item a {
+    display: block;
+    margin-top: 8px;
+    background: #00e676;
+    color: #000;
     text-align: center;
-    margin-top: 10px;
-    opacity: 0.8;
+    padding: 10px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: bold;
 }
 
 .footer {
-    text-align: center;
+    margin-top: 16px;
     font-size: 12px;
-    margin-top: 18px;
-    opacity: 0.6;
+    opacity: .6;
 }
 </style>
 </head>
 
 <body>
 
-<div class="container">
-    <h1>🎥 video Downloader</h1>
+<div class="card">
+    <h2>🎥 Video Downloader</h2>
 
-    <input type="text" id="videoUrl" placeholder="Tempel URL video di sini...">
-    <button onclick="downloadVideo()">Download</button>
+    <input id="url" placeholder="Tempel URL video di sini">
+    <button onclick="download()">Download</button>
 
     <div class="loading" id="loading"></div>
     <div class="result" id="result"></div>
 
-    <div class="footer">
-        Powered by api-faa.my.id
-    </div>
+    <div class="footer">Powered by api-faa.my.id</div>
 </div>
 
 <script>
-async function downloadVideo() {
-    const url = document.getElementById('videoUrl').value.trim();
-    const result = document.getElementById('result');
-    const loading = document.getElementById('loading');
+async function download() {
+    const url = document.getElementById("url").value.trim();
+    const loading = document.getElementById("loading");
+    const result = document.getElementById("result");
 
     result.innerHTML = "";
     loading.innerHTML = "";
@@ -132,58 +128,46 @@ async function downloadVideo() {
         return;
     }
 
-    loading.innerHTML = " mengambil data video...";
+    loading.innerHTML = "⏳ Mengambil data...";
 
     try {
-        const res = await fetch(
-            `https://api-faa.my.id/faa/aio?url=${encodeURIComponent(url)}`
-        );
-
+        const res = await fetch("/api/downloader?url=" + encodeURIComponent(url));
         const data = await res.json();
+
         loading.innerHTML = "";
 
-        if (!data || data.status === false) {
-            result.innerHTML = "<div class='card'>Gagal mengambil video.</div>";
+        if (!data || data.error) {
+            result.innerHTML = "<div class='item'>Gagal mengambil data</div>";
             return;
         }
 
-        // Judul video
         if (data.title) {
-            result.innerHTML += `
-                <div class="card">
-                    <strong>${data.title}</strong>
-                </div>
-            `;
+            result.innerHTML += `<div class="item"><b>${data.title}</b></div>`;
         }
 
-        // Jika ada array download
         if (Array.isArray(data.result)) {
-            data.result.forEach(item => {
+            data.result.forEach(v => {
                 result.innerHTML += `
-                    <div class="card">
-                        <div>📥 ${item.quality || "Video"}</div>
-                        <a href="${item.url}" target="_blank">Download</a>
+                    <div class="item">
+                        <div>${v.quality || "Video"}</div>
+                        <a href="${v.url}" target="_blank">Download</a>
                     </div>
                 `;
             });
-        }
-
-        // Jika format lain
-        if (data.url) {
+        } else if (data.url) {
             result.innerHTML += `
-                <div class="card">
+                <div class="item">
                     <a href="${data.url}" target="_blank">Download Video</a>
                 </div>
             `;
         }
 
-    } catch (err) {
+    } catch (e) {
         loading.innerHTML = "";
-        result.innerHTML = "<div class='card'>Terjadi kesalahan.</div>";
-        console.error(err);
+        result.innerHTML = "<div class='item'>Terjadi kesalahan</div>";
     }
 }
 </script>
 
 </body>
-  </html>
+</html>
