@@ -128,7 +128,7 @@ async function download() {
         return;
     }
 
-    loading.innerHTML = "⏳ Mengambil data...";
+    loading.innerHTML = "mengambil data...";
 
     try {
         const res = await fetch("/api/downloader?url=" + encodeURIComponent(url));
@@ -136,11 +136,16 @@ async function download() {
 
         loading.innerHTML = "";
 
-        if (!data || data.error) {
-            result.innerHTML = "<div class='item'>Gagal mengambil data</div>";
-            return;
-        }
-
+        if (data.error) {
+    result.innerHTML = `
+      <div class="item">
+        <b>Error:</b><br>
+        ${data.error}
+      </div>
+    `;
+    return;
+                                }
+     
         if (data.title) {
             result.innerHTML += `<div class="item"><b>${data.title}</b></div>`;
         }
