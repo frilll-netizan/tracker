@@ -1,293 +1,189 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Tracker - Clear Version</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Video Downloader</title>
+
 <style>
-  :root{--bg:#0b0c12;--card:rgba(255,255,255,0.04);--muted:#bfc7d6}
-  body{margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,Arial;background:var(--bg);color:#fff;display:flex;align-items:center;justify-content:center;min-height:100vh;padding:14px}
-  .wrap{width:100%;max-width:560px}
-  .card{background:var(--card);padding:16px;border-radius:12px;backdrop-filter:blur(6px);box-shadow:0 6px 18px rgba(0,0,0,0.5)}
-  h1{margin:0 0 8px;font-size:18px}
-  label{display:block;margin-top:10px;font-size:13px;color:var(--muted)}
-  input,select,button{width:100%;padding:10px;margin-top:6px;border-radius:8px;border:1px solid rgba(255,255,255,0.06);background:transparent;color:#fff}
-  .row{display:flex;gap:8px}
-  .row button{flex:1}
-  .muted{color:var(--muted);font-size:13px;margin-top:8px}
-  .status{margin-top:10px;font-size:14px;line-height:1.4}
-  .btn-ghost{background:transparent;border:1px solid rgba(255,255,255,0.06)}
-  .warn{color:#ffb4b4}
-  a.link{color:#9ad1ff}
-  pre{white-space:pre-wrap;background:rgba(0,0,0,0.2);padding:8px;border-radius:6px}
+* {
+    box-sizing: border-box;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+body {
+    margin: 0;
+    background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #fff;
+}
+
+.container {
+    width: 100%;
+    max-width: 420px;
+    background: rgba(255,255,255,0.08);
+    backdrop-filter: blur(15px);
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 10px 30px rgba(0,0,0,.3);
+}
+
+h1 {
+    text-align: center;
+    font-size: 22px;
+    margin-bottom: 20px;
+}
+
+input {
+    width: 100%;
+    padding: 14px;
+    border-radius: 10px;
+    border: none;
+    outline: none;
+    font-size: 15px;
+    margin-bottom: 12px;
+}
+
+button {
+    width: 100%;
+    padding: 14px;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 600;
+    background: linear-gradient(135deg, #00c6ff, #0072ff);
+    color: #fff;
+    transition: 0.3s;
+}
+
+button:hover {
+    opacity: 0.85;
+}
+
+.result {
+    margin-top: 20px;
+}
+
+.card {
+    background: rgba(0,0,0,0.4);
+    border-radius: 12px;
+    padding: 12px;
+    margin-bottom: 10px;
+}
+
+.card a {
+    display: block;
+    margin-top: 8px;
+    text-decoration: none;
+    background: #00e676;
+    color: #000;
+    padding: 10px;
+    border-radius: 8px;
+    text-align: center;
+    font-weight: bold;
+}
+
+.loading {
+    text-align: center;
+    margin-top: 10px;
+    opacity: 0.8;
+}
+
+.footer {
+    text-align: center;
+    font-size: 12px;
+    margin-top: 18px;
+    opacity: 0.6;
+}
 </style>
 </head>
+
 <body>
-  <div class="wrap">
-    <div class="card">
-      <h1>Tracker — versi jelas</h1>
 
-      <label>Firebase Realtime DB URL</label>
-      <input id="dbUrl" placeholder="https://tracker-5d77f-default-rtdb.firebaseio.com" value="https://tracker-5d77f-default-rtdb.firebaseio.com">
+<div class="container">
+    <h1>🎥 video Downloader</h1>
 
-      <label>Device ID</label>
-      <input id="deviceId" value="hp-saya">
+    <input type="text" id="videoUrl" placeholder="Tempel URL video di sini...">
+    <button onclick="downloadVideo()">Download</button>
 
-      <label>Interval update (detik)</label>
-      <input id="interval" type="number" min="5" value="10">
+    <div class="loading" id="loading"></div>
+    <div class="result" id="result"></div>
 
-      <div class="row" style="margin-top:8px">
-        <button id="startBtn">Mulai Tracking</button>
-        <button id="stopBtn" disabled class="btn-ghost">Stop</button>
-      </div>
-
-      <div style="margin-top:10px" class="status" id="status">
-        Status: siap.
-      </div>
-
-      <div id="more" style="margin-top:10px" class="muted">
-        <div id="hint"></div>
-      </div>
-
-      <div style="margin-top:10px">
-        <button id="retryBtn" class="btn-ghost">Retry Permission</button>
-      </div>
-
-      <div style="margin-top:12px;font-size:13px;color:var(--muted)">
-        <div><b>Catatan penting:</b></div>
-        <div>- Jika browser TIDAK menanyakan izin lokasi, kemungkinan kamu membuka file lewat <code>file://</code> atau browser memblokir geolocation tanpa HTTPS.</div>
-        <div>- Jika pakai Chrome: upload file ke hosting (Firebase Hosting / raw.githack / ngrok) agar dapat bekerja.</div>
-      </div>
+    <div class="footer">
+        Powered by api-faa.my.id
     </div>
-  </div>
-
-  <!-- Firebase compat (bisa bekerja di banyak situasi) -->
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+</div>
 
 <script>
-/*
-  FILE: tracker.html
-  Fungsi: cek permission -> minta lokasi -> watchPosition -> kirim ke Firebase Realtime DB
-  NOTE: gunakan hanya utk perangkat milikmu.
-*/
+async function downloadVideo() {
+    const url = document.getElementById('videoUrl').value.trim();
+    const result = document.getElementById('result');
+    const loading = document.getElementById('loading');
 
-// ============ masukkan firebaseConfig kamu di sini ============
-const firebaseConfig = {
-  apiKey: "AIzaSyAGggD581l1YrWYWzl3IIjyVM_YIazjXw8",
-  authDomain: "tracker-5d77f.firebaseapp.com",
-  databaseURL: "https://tracker-5d77f-default-rtdb.firebaseio.com",
-  projectId: "tracker-5d77f",
-  storageBucket: "tracker-5d77f.firebasestorage.app",
-  messagingSenderId: "998368816520",
-  appId: "1:998368816520:web:5e18308d195e277b84de3d",
-  measurementId: "G-RVWFLN0ML4"
-};
-// =============================================================
+    result.innerHTML = "";
+    loading.innerHTML = "";
 
-let watchId = null;
-let sendInterval = null;
-let lastPosition = null;
-
-const dbUrlEl = document.getElementById('dbUrl');
-const deviceIdEl = document.getElementById('deviceId');
-const intervalEl = document.getElementById('interval');
-const startBtn = document.getElementById('startBtn');
-const stopBtn = document.getElementById('stopBtn');
-const statusEl = document.getElementById('status');
-const hintEl = document.getElementById('hint');
-const retryBtn = document.getElementById('retryBtn');
-
-function logStatus(s, isWarn=false) {
-  statusEl.innerHTML = s;
-  if (isWarn) statusEl.style.color = '#ffb4b4'; else statusEl.style.color = '#fff';
-}
-
-// init firebase using DB URL field (override db URL in config if provided)
-function initFirebase() {
-  const dbUrl = (dbUrlEl.value || '').trim().replace(/\/$/,'');
-  try {
-    // override databaseURL if user provided a URL
-    const cfg = Object.assign({}, firebaseConfig);
-    if (dbUrl) cfg.databaseURL = dbUrl;
-    if (!firebase.apps.length) {
-      firebase.initializeApp(cfg);
+    if (!url) {
+        alert("Masukkan URL video!");
+        return;
     }
-    const db = firebase.database();
-    return db;
-  } catch(e) {
-    console.error('Firebase init err', e);
-    logStatus('Gagal inisialisasi Firebase.', true);
-    return null;
-  }
-}
 
-// write to Firebase at /locations/{deviceId}
-function sendToFirebase(deviceId, lat, lon, acc) {
-  const db = initFirebase();
-  if (!db) return;
-  const path = 'locations/' + deviceId;
-  const payload = { lat, lon, acc: Math.round(acc || 0), ts: new Date().toISOString() };
-  db.ref(path).set(payload).then(()=> {
-    console.log('sent', payload);
-  }).catch(err => {
-    console.warn('firebase set err', err);
-  });
-}
+    loading.innerHTML = " mengambil data video...";
 
-// permission check using Permissions API
-async function checkPermission() {
-  if (!navigator.permissions) {
-    hintEl.innerText = 'Permissions API tidak tersedia di browser ini. Akan mencoba meminta izin langsung.';
-    return 'prompt';
-  }
+    try {
+        const res = await fetch(
+            `https://api-faa.my.id/faa/aio?url=${encodeURIComponent(url)}`
+        );
 
-  try {
-    const p = await navigator.permissions.query({ name:'geolocation' });
-    // p.state = 'granted' | 'prompt' | 'denied'
-    return p.state;
-  } catch(e) {
-    console.warn('permission query err', e);
-    return 'prompt';
-  }
-}
+        const data = await res.json();
+        loading.innerHTML = "";
 
-// request one-time and/or start watch
-function startWatch() {
-  if (!navigator.geolocation) {
-    logStatus('Geolocation tidak tersedia di browser ini.', true);
-    return;
-  }
+        if (!data || data.status === false) {
+            result.innerHTML = "<div class='card'>Gagal mengambil video.</div>";
+            return;
+        }
 
-  logStatus('Mencoba meminta izin lokasi...');
-  // first try getCurrentPosition to prompt permission immediately
-  navigator.geolocation.getCurrentPosition(pos => {
-    lastPosition = pos.coords;
-    logStatus(`Izin diberikan. Lokasi: ${pos.coords.latitude.toFixed(6)}, ${pos.coords.longitude.toFixed(6)}`);
-    // start watchPosition for continuous updates
-    if (watchId === null) {
-      watchId = navigator.geolocation.watchPosition(p => {
-        lastPosition = p.coords;
-        logStatus(`Update: ${p.coords.latitude.toFixed(6)}, ${p.coords.longitude.toFixed(6)} (acc ${Math.round(p.coords.accuracy)} m)`);
-      }, err => {
-        console.warn('watch err', err);
-        logStatus('Error watchPosition: ' + err.message, true);
-      }, { enableHighAccuracy:true, maximumAge:5000, timeout:10000 });
+        // Judul video
+        if (data.title) {
+            result.innerHTML += `
+                <div class="card">
+                    <strong>${data.title}</strong>
+                </div>
+            `;
+        }
+
+        // Jika ada array download
+        if (Array.isArray(data.result)) {
+            data.result.forEach(item => {
+                result.innerHTML += `
+                    <div class="card">
+                        <div>📥 ${item.quality || "Video"}</div>
+                        <a href="${item.url}" target="_blank">Download</a>
+                    </div>
+                `;
+            });
+        }
+
+        // Jika format lain
+        if (data.url) {
+            result.innerHTML += `
+                <div class="card">
+                    <a href="${data.url}" target="_blank">Download Video</a>
+                </div>
+            `;
+        }
+
+    } catch (err) {
+        loading.innerHTML = "";
+        result.innerHTML = "<div class='card'>Terjadi kesalahan.</div>";
+        console.error(err);
     }
-    // start sending interval
-    startSendInterval();
-  }, err => {
-    console.warn('getCurrentPosition err', err);
-    if (err.code === 1) {
-      // PERMISSION_DENIED
-      logStatus('Izin lokasi ditolak. Ikuti petunjuk di bawah untuk mengizinkan.', true);
-      showPermissionHelp();
-    } else {
-      logStatus('Gagal mendapatkan lokasi: ' + err.message, true);
-    }
-  }, { enableHighAccuracy:true, timeout:10000 });
 }
-
-function startSendInterval() {
-  const deviceId = (deviceIdEl.value || '').trim();
-  if (!deviceId) {
-    logStatus('Isi Device ID dulu.', true);
-    return;
-  }
-  const sec = Math.max(5, parseInt(intervalEl.value||'10',10));
-  // clear existing
-  if (sendInterval) clearInterval(sendInterval);
-  // send immediately if we have lastPosition
-  if (lastPosition) {
-    sendToFirebase(deviceId, lastPosition.latitude, lastPosition.longitude, lastPosition.accuracy);
-  }
-  sendInterval = setInterval(()=> {
-    if (lastPosition) {
-      sendToFirebase(deviceId, lastPosition.latitude, lastPosition.longitude, lastPosition.accuracy);
-    } else {
-      console.log('no position yet');
-    }
-  }, sec * 1000);
-}
-
-// stop everything
-function stopAll() {
-  if (watchId !== null) {
-    navigator.geolocation.clearWatch(watchId);
-    watchId = null;
-  }
-  if (sendInterval) { clearInterval(sendInterval); sendInterval = null; }
-  logStatus('Tracking dihentikan.');
-}
-
-// show steps to enable location manually
-function showPermissionHelp() {
-  hintEl.innerHTML = `
-    <div class="warn">Langkah izinkan lokasi:</div>
-    <ol>
-      <li>Buka Settings / Pengaturan browser (Chrome: titik tiga → Settings → Site settings → Location)</li>
-      <li>Cari situs ini (atau "file://" jika dari file lokal) → ubah jadi <b>Allow</b></li>
-      <li>Jika tidak ada prompt karena file:// → gunakan <b>Firefox</b> atau host file lewat HTTPS (misal Firebase Hosting / ngrok / raw.githack)</li>
-    </ol>
-    <div>Butuh panduan upload ke Firebase Hosting / raw.githack? ketik: <b>cara host</b></div>
-  `;
-}
-
-// ===== UI events =====
-startBtn.addEventListener('click', async () => {
-  startBtn.disabled = true;
-  stopBtn.disabled = false;
-
-  const p = await checkPermission();
-  console.log('perm state', p);
-
-  if (p === 'denied') {
-    logStatus('Status: akses lokasi DITOLAK. Ikuti instruksi untuk mengaktifkan.', true);
-    showPermissionHelp();
-    startBtn.disabled = false;
-    stopBtn.disabled = true;
-    return;
-  }
-
-  // init firebase early
-  initFirebase();
-  startWatch();
-});
-
-stopBtn.addEventListener('click', ()=> {
-  stopAll();
-  startBtn.disabled = false;
-  stopBtn.disabled = true;
-});
-
-retryBtn.addEventListener('click', async () => {
-  logStatus('Mencoba lagi: meminta izin...');
-  const p = await checkPermission();
-  if (p === 'denied') {
-    logStatus('Masih ditolak. Ikuti instruksi untuk mengizinkan.', true);
-    showPermissionHelp();
-    return;
-  }
-  // force prompt by calling getCurrentPosition
-  navigator.geolocation.getCurrentPosition(pos=>{
-    lastPosition = pos.coords;
-    logStatus('Izin berhasil. lokasi diterima.');
-    startSendInterval();
-  }, err=>{
-    logStatus('Gagal meminta izin: ' + err.message, true);
-    if (err.code === 1) showPermissionHelp();
-  }, { enableHighAccuracy:true, timeout:10000 });
-});
-
-// Optional: detect insecure context
-(function checkContext() {
-  if (location.protocol === 'file:') {
-    hintEl.innerHTML = `
-      <div class="warn">Keterangan: kamu membuka file lewat <code>file://</code>. Beberapa browser (Chrome) tidak akan meminta izin lokasi untuk file lokal.</div>
-      <div>Solusi cepat: <b>buka file ini di Firefox</b> atau host file lewat HTTPS (Firebase Hosting / raw.githack / ngrok).</div>
-    `;
-  }
-})();
 </script>
+
 </body>
-        </html>
+  </html>
