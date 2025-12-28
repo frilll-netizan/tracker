@@ -19,4 +19,6 @@ export default async function handler(req, res) {
   } catch (e) {
     res.status(500).send("Error audio proxy");
   }
-}
+  document.body.addEventListener("click", () => {
+  audio.play().catch(()=>{});
+});
