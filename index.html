@@ -245,8 +245,8 @@ async function search() {
 
 function playSong(song) {
   currentSong = song;
-  audio.src = song.audio.url;
-  audio.play();
+  audio.src = "/api/play?q=" + encodeURIComponent(song.title);
+audio.play();
 
   document.getElementById("title").innerText = song.title;
   document.getElementById("artist").innerText = "YouTube";
