@@ -1,1 +1,262 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fril Player</title>
 
+<!-- Google Font -->
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --bg: #0b0f1a;
+  --glass: rgba(255,255,255,.06);
+  --border: rgba(255,255,255,.12);
+  --blue: #3aa3ff;
+  --text: #eaeaff;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Outfit', sans-serif;
+}
+
+body {
+  background: radial-gradient(circle at top right,#2b3cff,#0b0f1a 60%);
+  color: var(--text);
+  min-height: 100vh;
+  padding: 20px;
+}
+
+/* ===== HEADER ===== */
+.header {
+  text-align: center;
+  margin-bottom: 25px;
+}
+.header h1 {
+  font-size: 32px;
+  font-weight: 700;
+}
+.header span {
+  background: linear-gradient(90deg,#6fdcff,#9b6bff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.header p {
+  opacity: .6;
+  font-size: 14px;
+}
+
+/* ===== CONTROLS ===== */
+.controls {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.toggle {
+  background: var(--glass);
+  border: 1px solid var(--border);
+  padding: 8px 14px;
+  border-radius: 12px;
+  cursor: pointer;
+}
+.toggle.active {
+  background: var(--blue);
+}
+
+/* ===== SEARCH ===== */
+.search-box {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.search-box input {
+  flex: 1;
+  padding: 14px;
+  border-radius: 14px;
+  background: var(--glass);
+  border: 1px solid var(--border);
+  color: white;
+}
+.search-box button {
+  padding: 14px 18px;
+  border-radius: 14px;
+  background: var(--blue);
+  border: none;
+  color: white;
+  cursor: pointer;
+}
+
+/* ===== PLAYLIST ===== */
+.playlist {
+  background: var(--glass);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 15px;
+  margin-bottom: 90px;
+}
+.playlist h3 {
+  margin-bottom: 10px;
+}
+.song {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px;
+  border-radius: 12px;
+  cursor: pointer;
+}
+.song:hover {
+  background: rgba(255,255,255,.08);
+}
+.song img {
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+}
+.song .info {
+  flex: 1;
+}
+.song .info small {
+  opacity: .6;
+}
+
+/* ===== PLAYER ===== */
+.player {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(10,15,30,.9);
+  border-top: 1px solid var(--border);
+  padding: 12px 15px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.player img {
+  width: 50px;
+  height: 50px;
+  border-radius: 12px;
+}
+.player .pinfo {
+  flex: 1;
+}
+.player .buttons button {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 22px;
+  cursor: pointer;
+}
+.progress {
+  width: 100%;
+}
+.progress input {
+  width: 100%;
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+  <h1><span>Fril</span> Player</h1>
+  <p>NEXT GEN MUSIC EXPERIENCE</p>
+</div>
+
+<div class="controls">
+  <div class="toggle" id="loopBtn">Loop: Off</div>
+  <div class="toggle" id="shuffleBtn">Shuffle</div>
+</div>
+
+<div class="search-box">
+  <input type="text" id="query" placeholder="Cari lagu apa hari ini?">
+  <button onclick="search()">Cari</button>
+</div>
+
+<div class="playlist" id="playlist">
+  <h3>🎵 Playlist</h3>
+</div>
+
+<!-- PLAYER -->
+<div class="player">
+  <img id="cover" src="https://via.placeholder.com/100">
+  <div class="pinfo">
+    <div id="title">Belum ada lagu</div>
+    <small id="artist">-</small>
+    <div class="progress">
+      <input type="range" id="progress" value="0">
+    </div>
+  </div>
+  <div class="buttons">
+    <button onclick="prev()">◁</button>
+    <button onclick="playPause()">ㅤ❚❚ㅤ<button>
+    <button onclick="next()">▷</button>
+  </div>
+</div>
+
+<audio id="audio"></audio>
+
+<script>
+const API_URL = "https://api-faa.my.id/faa/ytplay?query=";
+
+const audio = document.getElementById("audio");
+let currentSong = null;
+
+async function search() {
+  const q = document.getElementById("query").value;
+  const playlist = document.getElementById("playlist");
+
+  playlist.innerHTML = "<h3>🎵 Playlist</h3>";
+
+  try {
+    const res = await fetch(API_URL + encodeURIComponent(q));
+    const data = await res.json();
+
+    if (!data.status) {
+      playlist.innerHTML += "<p>❌ Lagu tidak ditemukan</p>";
+      return;
+    }
+
+    const song = data.result;
+
+    const div = document.createElement("div");
+    div.className = "song";
+    div.innerHTML = `
+      <img src="${song.thumbnail}">
+      <div class="info">
+        <div>${song.title}</div>
+        <small>YouTube Audio</small>
+      </div>
+    `;
+
+    div.onclick = () => playSong(song);
+    playlist.appendChild(div);
+
+  } catch (e) {
+    playlist.innerHTML += "<p>⚠️ Error API</p>";
+  }
+}
+
+function playSong(song) {
+  currentSong = song;
+  audio.src = song.audio.url;
+  audio.play();
+
+  document.getElementById("title").innerText = song.title;
+  document.getElementById("artist").innerText = "YouTube";
+  document.getElementById("cover").src = song.thumbnail;
+}
+
+function playPause() {
+  audio.paused ? audio.play() : audio.pause();
+}
+</script>
+
+</body>
+</html>
