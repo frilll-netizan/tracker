@@ -1,264 +1,767 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Fril Player</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="color-scheme" content="dark">
+    <meta name="theme-color" content="#111111">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <meta name="robots" content="noindex, nofollow, noarchive">
+    <meta name="referrer" content="no-referrer">
 
-<!-- Google Font -->
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/png" href="chat.png">
 
-<style>
-:root {
-  --bg: #0b0f1a;
-  --glass: rgba(255,255,255,.06);
-  --border: rgba(255,255,255,.12);
-  --blue: #3aa3ff;
-  --text: #eaeaff;
-}
+    <title>ohhhhh💦</title>
+    <script src="https://cdn.ably.com/lib/ably.min-1.js"></script>
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: 'Outfit', sans-serif;
-}
+    <style>
+        * {
+            box-sizing: border-box
+        }
 
-body {
-  background: radial-gradient(circle at top right,#2b3cff,#0b0f1a 60%);
-  color: var(--text);
-  min-height: 100vh;
-  padding: 20px;
-}
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+            background: #1e1e1e;
+            color: #ddd;
+            font-family: monospace;
+            overflow: hidden;
+            touch-action: manipulation;
+        }
 
-/* ===== HEADER ===== */
-.header {
-  text-align: center;
-  margin-bottom: 25px;
-}
-.header h1 {
-  font-size: 32px;
-  font-weight: 700;
-}
-.header span {
-  background: linear-gradient(90deg,#6fdcff,#9b6bff);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-.header p {
-  opacity: .6;
-  font-size: 14px;
-}
+        .chat-page,
+        .chat-wrap,
+        .chat-log,
+        .chat-input,
+        button {
+            touch-action: manipulation;
+        }
 
-/* ===== CONTROLS ===== */
-.controls {
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-  margin-bottom: 20px;
-}
-.toggle {
-  background: var(--glass);
-  border: 1px solid var(--border);
-  padding: 8px 14px;
-  border-radius: 12px;
-  cursor: pointer;
-}
-.toggle.active {
-  background: var(--blue);
-}
+        .center {
+            min-height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 16px
+        }
 
-/* ===== SEARCH ===== */
-.search-box {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 20px;
-}
-.search-box input {
-  flex: 1;
-  padding: 14px;
-  border-radius: 14px;
-  background: var(--glass);
-  border: 1px solid var(--border);
-  color: white;
-}
-.search-box button {
-  padding: 14px 18px;
-  border-radius: 14px;
-  background: var(--blue);
-  border: none;
-  color: white;
-  cursor: pointer;
-}
+        .box {
+            position: relative;
+            width: 100%;
+            max-width: 380px;
+            background: #111;
+            padding: 24px;
+            border: 1px solid #333;
+            border-radius: 10px
+        }
 
-/* ===== PLAYLIST ===== */
-.playlist {
-  background: var(--glass);
-  border: 1px solid var(--border);
-  border-radius: 18px;
-  padding: 15px;
-  margin-bottom: 90px;
-}
-.playlist h3 {
-  margin-bottom: 10px;
-}
-.song {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 10px;
-  border-radius: 12px;
-  cursor: pointer;
-}
-.song:hover {
-  background: rgba(255,255,255,.08);
-}
-.song img {
-  width: 48px;
-  height: 48px;
-  border-radius: 10px;
-}
-.song .info {
-  flex: 1;
-}
-.song .info small {
-  opacity: .6;
-}
+        .room-form {
+            text-align: center
+        }
 
-/* ===== PLAYER ===== */
-.player {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: rgba(10,15,30,.9);
-  border-top: 1px solid var(--border);
-  padding: 12px 15px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-.player img {
-  width: 50px;
-  height: 50px;
-  border-radius: 12px;
-}
-.player .pinfo {
-  flex: 1;
-}
-.player .buttons button {
-  background: none;
-  border: none;
-  color: white;
-  font-size: 22px;
-  cursor: pointer;
-}
-.progress {
-  width: 100%;
-}
-.progress input {
-  width: 100%;
-}
-</style>
+        .room-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 6px
+        }
+
+        .room-desc {
+            font-size: 14px;
+            color: #aaa;
+            margin-bottom: 16px
+        }
+
+        .box input {
+            width: 100%;
+            padding: 14px;
+            font-size: 16px;
+            border-radius: 6px;
+            margin-bottom: 12px;
+            background: #000;
+            border: 1px solid #444;
+            color: #fff;
+            text-align: center
+        }
+
+        .box button {
+            width: 100%;
+            padding: 14px;
+            font-size: 16px;
+            border-radius: 6px;
+            background: #001effdb;
+            border: none;
+            color: #fff
+        }
+
+
+        .chat-page {
+            height: 100dvh;
+            display: flex;
+            flex-direction: column
+        }
+
+        .header-bar {
+            height: 44px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 0 10px;
+            background: #111;
+            border-bottom: 1px solid #333
+        }
+
+        .room-title-chat {
+            flex: 1;
+            text-align: center;
+            font-weight: bold
+        }
+
+        .container {
+            flex: 1;
+            display: flex;
+            overflow: hidden
+        }
+
+        .users {
+            width: 200px;
+            background: #111;
+            border-right: 1px solid #333;
+            padding: 10px;
+            overflow-y: auto
+        }
+
+        .chat-wrap {
+            font-size: 17px;
+            flex: 1;
+            overflow: hidden
+        }
+
+        .chat-log {
+            height: 100%;
+            padding: 10px;
+            overflow-y: auto
+        }
+
+        .msg {
+            margin-bottom: 6px
+        }
+
+        .msg.system {
+            color: #aaa;
+            font-style: italic
+        }
+
+        .msg .user {
+            color: #4da6ff
+        }
+
+        .chat-input {
+            height: 50px;
+            display: flex;
+            border-top: 1px solid #333;
+            background: #111
+        }
+
+        .chat-input input {
+            flex: 1;
+            border: none;
+            background: #111;
+            color: #fff;
+            padding: 10px;
+            font-size: 16px
+        }
+
+        .chat-input button {
+            width: 80px;
+            border: none;
+            background: #0077ffff;
+            color: #fff
+        }
+
+        @media(max-width:768px) {
+            .users {
+                position: fixed;
+                top: 44px;
+                bottom: 50px;
+                left: -220px;
+                transition: .25s;
+                z-index: 1000
+            }
+
+            .users.show {
+                left: 0
+            }
+        }
+
+        .header-bar button {
+            height: 32px;
+            min-width: 44px;
+            padding: 0 10px;
+            border-radius: 6px;
+            border: none;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        #toggleUsers {
+            background: #333;
+            color: #fff;
+        }
+
+        #btnExit {
+            font-size: 17px;
+            background: #ff005dff;
+            color: #fff;
+            box-shadow: 0 0 8px rgba(255, 10, 128, 1);
+        }
+
+        .online-count {
+            font-size: 16px;
+            color: #0f0;
+            margin-left: 6px;
+            white-space: nowrap;
+        }
+
+        .room-title-chat {
+            flex: 1;
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+        }
+
+        .chat-input button {
+            font-size: 17px;
+            width: 80px;
+            border: none;
+            background: #0634dcff;
+            color: #fff;
+            font-weight: bold;
+            letter-spacing: .5px;
+            box-shadow: 0 0 8px rgba(13, 110, 253, .6);
+            transition: all .2s ease;
+        }
+
+
+        .chat-input button:hover {
+            background: #0634dcff;
+            box-shadow: 0 0 14px rgba(13, 110, 253, .9);
+        }
+
+
+        .chat-input button:active {
+            transform: scale(.96);
+        }
+
+        .letter-slider {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 14px;
+            margin-bottom: 16px;
+        }
+
+        #letterDisplay {
+            font-size: 28px;
+            font-weight: bold;
+            width: 50px;
+            text-align: center;
+        }
+
+
+
+        .info-btn {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            cursor: pointer;
+            font-size: 20px;
+            background: #222;
+            border: 1px solid #444;
+            border-radius: 50%;
+            width: 34px;
+            height: 34px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.2s;
+        }
+
+        .info-btn:hover {
+            background: #333;
+            transform: scale(1.05);
+        }
+
+
+        .modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-box {
+            background: #111;
+            color: #ddd;
+            width: 90%;
+            max-width: 400px;
+            border-radius: 10px;
+            padding: 20px;
+            border: 1px solid #333;
+            animation: pop 0.2s ease;
+        }
+
+        @keyframes pop {
+            from {
+                transform: scale(0.9);
+                opacity: 0;
+            }
+
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .modal-box h3 {
+            margin-top: 0;
+            text-align: center;
+        }
+
+        .modal-box p {
+            font-size: 14px;
+            line-height: 1.6;
+            color: #bbb;
+        }
+
+        .modal-close {
+            margin-top: 16px;
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 6px;
+            background: #0d6efd;
+            color: #fff;
+            font-size: 15px;
+        }
+
+
+        .room-info-btn {
+            all: unset;
+            position: absolute;
+            top: 10px;
+            right: 10px;
+
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            font-size: 18px;
+            cursor: pointer;
+
+            background: #222;
+            border: 1px solid #444;
+            color: #fff;
+
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+
+            z-index: 10;
+            transition: 0.2s ease;
+        }
+
+        .room-info-btn:hover {
+            background: #333;
+            transform: scale(1.05);
+        }
+
+        .beta-title {
+            text-align: center;
+            margin-bottom: 14px;
+            user-select: none;
+        }
+
+        .beta-title .app-name {
+            display: block;
+            font-size: 36px;
+            font-weight: 800;
+            letter-spacing: 3px;
+            color: #fff;
+            line-height: 1;
+        }
+
+        .beta-title .beta-tag {
+            display: block;
+            margin-top: 4px;
+            font-size: 12px;
+            letter-spacing: 2px;
+            color: #888;
+            text-transform: uppercase;
+        }
+
+        /* --- TAMBAHAN TIMER --- */
+        .timer-watermark {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 12vw;
+            font-weight: 900;
+            color: rgba(255, 255, 255, 0.05);
+            /* Transparan */
+            pointer-events: none;
+            z-index: 0;
+            user-select: none;
+            white-space: nowrap;
+            font-family: sans-serif;
+        }
+
+        /* Supaya chat tetap di atas angka */
+        .chat-log {
+            position: relative;
+            z-index: 1;
+        }
+
+
+        /* --- TAMBAHAN STYLE CHAT BUBBLE --- */
+        .msg-row {
+            display: flex;
+            width: 100%;
+            margin-bottom: 8px;
+            /* Jarak antar chat */
+        }
+
+        /* Pesan Saya (Rata Kanan) */
+        .msg-row.me {
+            justify-content: flex-end;
+        }
+
+        .msg-row.me .msg-bubble {
+            background: #005c4b;
+            /* Hijau WA (Ganti warna ini jika mau) */
+            color: #fff;
+            border-radius: 12px 0 12px 12px;
+            /* Lancip di kanan atas */
+        }
+
+        /* Pesan Orang Lain (Rata Kiri) */
+        .msg-row.other {
+            justify-content: flex-start;
+        }
+
+        .msg-row.other .msg-bubble {
+            background: #333;
+            /* Abu-abu gelap */
+            color: #fff;
+            border-radius: 0 12px 12px 12px;
+            /* Lancip di kiri atas */
+        }
+
+        /* Style Umum Bubble */
+        .msg-bubble {
+            max-width: 80%;
+            padding: 8px 12px;
+            font-size: 15px;
+            word-wrap: break-word;
+            position: relative;
+        }
+
+        /* Nama User Kecil di atas pesan orang lain */
+        .user-name-label {
+            font-size: 11px;
+            color: #4da6ff;
+            font-weight: bold;
+            display: block;
+            margin-bottom: 3px;
+        }
+
+        /* Icon Kamera Putih Polos */
+        .cam-icon {
+            background: transparent !important;
+            /* Hapus background default */
+            border: none !important;
+            padding: 0 10px !important;
+            cursor: pointer;
+        }
+
+        .cam-icon svg {
+            width: 24px;
+            height: 24px;
+            stroke: white;
+            /* Warna garis putih */
+            fill: none;
+            stroke-width: 2;
+        }
+    </style>
 </head>
 
 <body>
 
-<div class="header">
-  <h1><span>Fril</span> Player</h1>
-  <p>NEXT GEN MUSIC EXPERIENCE</p>
-</div>
+            <div class="center">
+            <div class="box">
+                <form method="get" class="room-form">
+                    <div class="room-info-btn" id="openInfo">🤫</div>
+                    <div class="room-title">Pilih Room</div>
+                    <div class="room-desc">Kosongkan untuk membuat room secara random</div>
 
-<div class="controls">
-  <div class="toggle" id="loopBtn">Loop: Off</div>
-  <div class="toggle" id="shuffleBtn">Shuffle</div>
-</div>
+                    <div class="letter-slider">
+                        <button type="button" id="prevLetter">◀</button>
+                        <div id="letterDisplay">A</div>
+                        <button type="button" id="nextLetter">▶</button>
+                    </div>
 
-<div class="search-box">
-  <input type="text" id="query" placeholder="Cari lagu apa hari ini?">
-  <button onclick="search()">Cari</button>
-</div>
+                    <input type="hidden" name="letter" id="letterInput" value="A">
+                    <input type="tel" name="digit" maxlength="3" placeholder="000">
 
-<div class="playlist" id="playlist">
-  <h3>🎵 Playlist</h3>
-</div>
+                    <button type="submit"><b>Masuk / Buat Room</b></button>
+                    <br><br><br>
+                    Versi Beta 1.3<br> by <a href="https://www.instagram.com/frill_mpi?igsh=ZGtmeDUwNnFieGls" target="_blank">fril.mpi</a>
+                </form>
 
-<!-- PLAYER -->
-<div class="player">
-  <img id="cover" src="https://via.placeholder.com/100">
-  <div class="pinfo">
-    <div id="title">Belum ada lagu</div>
-    <small id="artist">-</small>
-    <div class="progress">
-      <input type="range" id="progress" value="0">
+            </div>
+        </div>
+
+    
+
+    <div class="modal" id="infoModal">
+        <div class="modal-box">
+            <div class="beta-title">
+                <span class="app-name">SSSST.FRIL</span>
+                <span class="beta-tag">versi beta 1.3 <br> by <a href="https://www.instagram.com/frill_mpi?igsh=ZGtmeDUwNnFieGls">fril.mpi</a></span>
+            </div>
+            <p>
+                Aplikasi ini adalah <b>Realtime Chat Room</b> yang memungkinkan
+                pengguna masuk ke dalam room tanpa login, registrasi atau secara anonim.
+            </p>
+            <p>
+                Room dibuat menggunakan kombinasi <b>huruf dan angka</b>, cocok untuk
+                diskusi cepat, obrolan santai, atau koordinasi kelompok kecil.
+            </p>
+            <p>
+                Fokus utama aplikasi ini adalah <b>kecepatan, kesederhanaan, dan <b style="color:red">privasi</b></b>.
+                Tidak ada data pribadi dan chat tidak disimpan permanen.
+            </p>
+            <p>
+                History atau log akan terhapus saat refresh, exit atau sudah mencapai 50 baris chat. Jika terjadi <i>lag</i>
+                silahkan exit/back dan login kembali ke dalam room.
+            </p>
+            <p>
+                Harap menggunakan aplikasi ini dengan bijak dan jangan menggunakan untuk hal-hal yang melanggar hukum.
+            </p>
+
+            <button class="modal-close" id="closeInfo">Tutup</button>
+        </div>
     </div>
-  </div>
-  <div class="buttons">
-    <button onclick="prev()">◁</button>
-    <button onclick="playPause()">ㅤ❚❚ㅤ<button>
-    <button onclick="next()">▷</button>
-  </div>
-</div>
 
-<audio id="audio"></audio>
 
-<script>
-const API_URL = "https://api-faa.my.id/faa/ytplay?query=";
+    <script>
+        const openInfo = document.getElementById("openInfo");
+        const closeInfo = document.getElementById("closeInfo");
+        const modal = document.getElementById("infoModal");
 
-const audio = document.getElementById("audio");
-let currentSong = null;
+        if (openInfo && modal) {
+            openInfo.onclick = () => modal.classList.add("show");
+            closeInfo.onclick = () => modal.classList.remove("show");
 
-async function search() {
-  const q = document.getElementById("query").value;
-  const playlist = document.getElementById("playlist");
+            modal.addEventListener("click", (e) => {
+                if (e.target === modal) modal.classList.remove("show");
+            });
+        }
+    </script>
 
-  playlist.innerHTML = "<h3>🎵 Playlist</h3>";
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const display = document.getElementById('letterDisplay');
+            const letterInput = document.getElementById('letterInput');
+            const prev = document.getElementById('prevLetter');
+            const next = document.getElementById('nextLetter');
 
-  try {
-    const res = await fetch(API_URL + encodeURIComponent(q));
-    const data = await res.json();
+            if (!display || !letterInput || !prev || !next) return;
 
-    if (!data.status) {
-      playlist.innerHTML += "<p>❌ Lagu tidak ditemukan</p>";
-      return;
-    }
+            const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split('');
+            let index = letters.indexOf(letterInput.value);
+            if (index < 0) index = 0;
 
-    const song = data.result;
+            function updateLetter() {
+                display.textContent = letters[index];
+                letterInput.value = letters[index];
+            }
 
-    const div = document.createElement("div");
-    div.className = "song";
-    div.innerHTML = `
-      <img src="${song.thumbnail}">
-      <div class="info">
-        <div>${song.title}</div>
-        <small>YouTube Audio</small>
-      </div>
-    `;
+            prev.addEventListener('click', () => {
+                index = (index - 1 + letters.length) % letters.length;
+                updateLetter();
+            });
 
-    div.onclick = () => playSong(song);
-    playlist.appendChild(div);
+            next.addEventListener('click', () => {
+                index = (index + 1) % letters.length;
+                updateLetter();
+            });
 
-  } catch (e) {
-    playlist.innerHTML += "<p>⚠️ Error API</p>";
-  }
-}
+            updateLetter();
+        });
+    </script>
 
-function playSong(song) {
-  currentSong = song;
-  audio.src = "/api/play?q=" + encodeURIComponent(song.title);
-  audio.muted = false;
-audio.volume = 1;
-audio.play();
+    <script>
+        (function() {
+            const ROOM_ID = "";
+            const LIMIT_MINUTES = 15;
+            const TIMER_KEY = "expire_" + ROOM_ID;
+            const timerDisplay = document.getElementById('gameTimer');
 
-  document.getElementById("title").innerText = song.title;
-  document.getElementById("artist").innerText = "YouTube";
-  document.getElementById("cover").src = song.thumbnail;
-}
+            if (!ROOM_ID || !timerDisplay) return;
 
-function playPause() {
-  audio.paused ? audio.play() : audio.pause();
-}
-</script>
+
+            let expireTime = localStorage.getItem(TIMER_KEY);
+
+            if (!expireTime) {
+                expireTime = Date.now() + (LIMIT_MINUTES * 60 * 1000);
+                localStorage.setItem(TIMER_KEY, expireTime);
+            }
+
+
+            function updateTimer() {
+                const now = Date.now();
+                const distance = expireTime - now;
+
+                // Kalo waktu habis
+                if (distance <= 0) {
+                    timerDisplay.textContent = "TIME'S UP";
+                    timerDisplay.style.color = "rgba(255, 0, 0, 0.2)"; // Merah pudar
+
+
+                    localStorage.removeItem(TIMER_KEY);
+
+                    alert("Waktu Habis! Room telah ditutup untuk Anda.");
+                    window.location.href = 'exit.php'; // Tendang keluar
+                    return;
+                }
+
+                const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+
+                timerDisplay.textContent = minutes + ":" + (seconds < 10 ? "0" : "") + seconds;
+
+
+                requestAnimationFrame(updateTimer);
+            }
+
+
+            updateTimer();
+        })();
+    </script>
+
+    <script>
+        const uploadModal = document.getElementById('uploadModal');
+
+        document.getElementById('imgInput').addEventListener('change', async function() {
+            if (this.files.length === 0) return;
+
+            const file = this.files[0];
+            const formData = new FormData();
+            formData.append('image', file);
+
+
+            uploadModal.style.display = 'flex';
+
+
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 20000);
+
+            try {
+                const res = await fetch('upload.php', {
+                    method: 'POST',
+                    body: formData,
+                    signal: controller.signal
+                });
+
+                clearTimeout(timeoutId);
+
+                if (res.ok) {
+                    const fileName = await res.text();
+                    const msgContent = `[IMG:${fileName}]`;
+                    const encrypted = await encryptMessage(msgContent, room);
+
+                    await channel.publish('msg', {
+                        user: username,
+                        payload: encrypted
+                    });
+
+                } else {
+                    alert("Gagal upload: Server sibuk.");
+                }
+            } catch (e) {
+                if (e.name === 'AbortError') {
+                    alert("Koneksi lambat, upload dibatalkan.");
+                } else {
+                    console.error(e);
+                    alert("Terjadi kesalahan saat upload.");
+                }
+            } finally {
+                uploadModal.style.display = 'none';
+                this.value = '';
+            }
+        });
+    </script>
+
+
+    <script>
+        (function() {
+
+            document.addEventListener("visibilitychange", function() {
+                if (document.visibilityState === "visible") {
+
+                    if (ably.connection.state === 'suspended' || ably.connection.state === 'closed' || ably.connection.state === 'disconnected') {
+                        addMsg('<i>🔄 Menyambungkan kembali jaringan...</i>', 'msg system');
+                        ably.connection.connect();
+
+                        channel.presence.enter(username);
+                    }
+                }
+            });
+
+
+            ably.connection.on('disconnected', function() {
+                addMsg('<i>⚠️ Sinyal terputus, mencoba reconnect... coba kirim chat "ping"<br>jika belum terhubung silahkan exit dan login kembali ke room ini</i>', 'msg system');
+                setTimeout(() => ably.connection.connect(), 1000);
+            });
+
+            ably.connection.on('connected', function() {
+
+            });
+
+
+
+
+            let exited = false;
+
+            function exitSession() {
+                if (exited) return;
+                exited = true;
+                navigator.sendBeacon("exit.php");
+            }
+
+
+            window.addEventListener("pagehide", exitSession);
+
+        })();
+    </script>
 
 </body>
+
 </html>
